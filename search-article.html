@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <title>Search Article</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.27/daterangepicker.min.css" />
+    </head>
+    <body>
+            <nav class="navbar bg-light">
+                <div class="navbar-brand">Search Article</div>
+            </nav>
+        <div class="container">
+            <div class="row pt-md-3 pb-md-3">
+                <div class="col-12">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" class="form-control daterange" name="date_range">
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Enter Keywords" name="query" />
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary js-search-button">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-12">
+                    <div class="row js-result-container">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.27/moment.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.27/daterangepicker.min.js"></script>
+        <script>
+            $(".daterange").daterangepicker({
+                locale: {
+                    format: 'YYYYMMDD'
+                }
+            });
+            ;(function () {
+                function replaceContainer(items) {
+                    var $container = $('.js-result-container');
+                    $container.empty();
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i],
+                            $block = $('<div class="col-12"></div>');
+
+                        $block.append('<h6><a target="_blank" href="'+ item.link +'">'+ item.title +'</a></h6>');
+                        $block.append('<small><div>'+ item.htmlFormattedUrl +'</div></small>')
+                        $block.append('<p>'+item.htmlSnippet+'</p>');
+                        $container.append($block);
+                    }
+                }
+
+                function appendPagination(queryData, params) {
+                    var $container = $('.js-result-container'),
+                        nextPageData = queryData.nextPage,
+                        prevPageData = queryData.previousPage,
+                        $block = $('<div class="col-12"></div>'),
+                        dataParams =  null;
+                    console.log(queryData);
+                    if (prevPageData) {
+                        console.log('PrevData:', prevPageData);
+                        var prevDataParams = $.extend({}, params);
+                        prevDataParams.start = prevPageData[0].startIndex;
+                        $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(prevDataParams) +'><< Prev</a>');
+                    }
+
+                    if (nextPageData) {
+                        console.log('nextData:', nextPageData);
+                        var nextDataParams = $.extend({}, params);
+                        nextDataParams.start = nextPageData[0].startIndex;
+                        $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(nextDataParams) +'>Next >></a>');
+                    }
+                    $container.append($block);
+                }
+
+                function doSearch(dataParams) {
+                    console.log('doSearch');
+                    var url = "https://www.googleapis.com/customsearch/v1?",
+                        keys = {
+                            "key": "AIzaSyDBNoa31j4DtD0hnG3QPM5JqQ_1j7yMyg4",
+                            "cx": "016769863846816553333:s5vzzpjegw4"
+                        },
+                        params = $.extend(keys, dataParams),
+                        paramString = $.param(params);
+
+                    $('.js-result-container').empty();
+                    $.get(url + paramString).done(function (data) {
+                        var results = data.items,
+                            queryData = data.queries;
+
+                        replaceContainer(results);
+                        appendPagination(queryData, dataParams);
+                    });
+                }
+
+                var $inputQuery = $("[name=query]"),
+                    $inputDate = $("[name=date_range]");
+
+                    $('.js-search-button').click(function () {
+                    });
+                    $('form').submit(function(event) {
+                        var $this = $(this),
+                            query = $inputQuery.val(),
+                            dateRange = $inputDate.val().replace(' - ', ':'),
+                            params = {
+                                q: query,
+                                sort: "date:r:" + dateRange
+                            }
+
+                        doSearch(params);
+                        event.preventDefault();
+                    });
+                    $('.js-result-container').on('click', '.js-do-search',function(event) {
+                        var $this = $(this),
+                            params = JSON.parse($this.attr('data-params'));
+
+                        event.preventDefault();
+                        console.log('Do Search');
+                        $(document).scrollTop(0);
+                        doSearch(params);
+
+                    })
+            })();
+        </script>
+    </body>
+</html>
