@@ -50,9 +50,9 @@
                         var item = items[i],
                             $block = $('<div class="col-12"></div>');
 
-                        $block.append('<h6><a target="_blank" href="'+ item.link +'">'+ item.title +'</a></h6>');
-                        $block.append('<small><div>'+ item.htmlFormattedUrl +'</div></small>')
-                        $block.append('<p>'+item.htmlSnippet+'</p>');
+                        $block.append('<h6><a target="_blank" href="'+ item.url +'">'+ item.title +'</a></h6>');
+                        $block.append('<small><div>'+ item.formattedUrl +'</div></small>')
+                        $block.append('<p>'+item.content+'</p>');
                         $container.append($block);
                     }
                 }
@@ -63,16 +63,14 @@
                         prevPageData = queryData.previousPage,
                         $block = $('<div class="col-12"></div>'),
                         dataParams =  null;
-                    console.log(queryData);
+
                     if (prevPageData) {
-                        console.log('PrevData:', prevPageData);
                         var prevDataParams = $.extend({}, params);
                         prevDataParams.start = prevPageData[0].startIndex;
                         $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(prevDataParams) +'><< Prev</a>');
                     }
 
                     if (nextPageData) {
-                        console.log('nextData:', nextPageData);
                         var nextDataParams = $.extend({}, params);
                         nextDataParams.start = nextPageData[0].startIndex;
                         $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(nextDataParams) +'>Next >></a>');
@@ -80,23 +78,43 @@
                     $container.append($block);
                 }
 
+                function appendPaginationNumber(cursorData, dataParams)
+                {
+                    var $container = $('.js-result-container'),
+                        pageData = cursorData.pages,
+                        $block = $('<div class="col-12"></div>'),
+                        pageParams = $.extend({}, dataParams);
+
+                    for (var i = 0; i < pageData.length; i++) {
+                        pageParams.start = pageData[i].start;
+                        if (cursorData.currentPageIndex === i) {
+                            $block.append('<a class="btn disabled" disabled>'+pageData[i].label+'</a>');
+                        } else {
+                            $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(pageParams) +'>'+pageData[i].label+'</a>');
+                        }
+                    }
+                    $container.append($block);
+                }
+
                 function doSearch(dataParams) {
                     console.log('doSearch');
-                    var url = "https://www.googleapis.com/customsearch/v1?",
+                    var url = "https://www.googleapis.com/customsearch/v1element?",
                         keys = {
-                            "key": "AIzaSyAkDd5uyTfDRa9OiG0IKZwYXg62Oji6lwc",
-                            "cx": "016769863846816553333:s5vzzpjegw4"
+                            "key": "AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY",
+                            "cx": "016769863846816553333:s5vzzpjegw4",
+                            "cse_tok": "ABPF6Hhg4ByJkEUmgLSB7X_93quPKtLIyg:1522236161038",
+                            "num": 20
                         },
                         params = $.extend(keys, dataParams),
                         paramString = $.param(params);
 
                     $('.js-result-container').empty();
                     $.get(url + paramString).done(function (data) {
-                        var results = data.items,
-                            queryData = data.queries;
+                        var results = data.results,
+                            cursorData = data.cursor;
 
                         replaceContainer(results);
-                        appendPagination(queryData, dataParams);
+                        appendPaginationNumber(cursorData, dataParams);
                     });
                 }
 
@@ -122,7 +140,6 @@
                             params = JSON.parse($this.attr('data-params'));
 
                         event.preventDefault();
-                        console.log('Do Search');
                         $(document).scrollTop(0);
                         doSearch(params);
 
