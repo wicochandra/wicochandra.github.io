@@ -46,6 +46,9 @@
                 function replaceContainer(items) {
                     var $container = $('.js-result-container');
                     $container.empty();
+                    if (items.length === 0) {
+                        $container.append('<i class="col-12">Empty Search</i>');
+                    }
                     for (var i = 0; i < items.length; i++) {
                         var item = items[i],
                             $block = $('<div class="col-12"></div>');
@@ -97,7 +100,6 @@
                 }
 
                 function doSearch(dataParams) {
-                    console.log('doSearch');
                     var url = "https://www.googleapis.com/customsearch/v1element?",
                         keys = {
                             "key": "AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY",
@@ -115,6 +117,8 @@
 
                         replaceContainer(results);
                         appendPaginationNumber(cursorData, dataParams);
+                    }).fail(function() {
+                        alert("Error, fail to retrieve data from source. Please contact Admin.");
                     });
                 }
 
