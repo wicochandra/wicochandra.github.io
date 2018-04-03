@@ -90,7 +90,7 @@
                         if (cursorData.currentPageIndex === i) {
                             $block.append('<a class="btn disabled" disabled>'+pageData[i].label+'</a>');
                         } else {
-                            $block.append('<a href="#" class="js-do-search btn" data-params='+ JSON.stringify(pageParams) +'>'+pageData[i].label+'</a>');
+                            $block.append('<a href="#" class="js-do-search btn" data-params='+"'"+ JSON.stringify(pageParams) +"'>"+pageData[i].label+'</a>');
                         }
                     }
                     $container.append($block);
